@@ -5,6 +5,7 @@
 - There is also a button to uplaod the recording but it is not functional yet.
 
 ## Technologies used
+- Andriod Studio
 - Kotlin
 - XML
 - ViewBinding
